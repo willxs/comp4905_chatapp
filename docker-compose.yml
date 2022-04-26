@@ -1,0 +1,39 @@
+# Cite:Docker, “awesome-compose/nginx-nodejs-redis at master · docker/awesome-compose,” GitHub. [Online]. Available: https://github.com/docker/awesome-compose/tree/master/nginx-nodejs-redis.
+version: '3'
+
+services:
+  web:
+    build: ./frontend_messenger
+    expose:
+      - 3000
+    volumes:
+      - ./frontend_messenger:/app
+      
+  redis:
+    image: redis:latest
+    expose:
+      - 6379
+    volumes:
+      - redis_data:/data 
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+  server:
+    build: ./backend_server
+    expose:
+      - 5000
+    depends_on: 
+      - redis
+    volumes:
+      - ./backend_server:/app
+
+  nginx:
+    image: nginx:1.13 
+    ports:
+      - '80:80'
+    depends_on: 
+      - web
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+volumes:  
+  redis_data:
